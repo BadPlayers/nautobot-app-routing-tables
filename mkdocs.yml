@@ -1,0 +1,22 @@
+site_name: "Nautobot Routing Tables"
+theme:
+  name: material
+plugins:
+  - search
+nav:
+  - Home: index.md
+  - User Guide:
+      - Overview: user/overview.md
+      - Modeling: user/modeling.md
+      - Connected Routes: user/connected-routes.md
+      - UI Walkthrough: user/ui.md
+  - Administrator Guide:
+      - Install: admin/install.md
+      - Configuration: admin/configuration.md
+      - Permissions: admin/permissions.md
+      - Upgrades: admin/upgrades.md
+  - Developer Guide:
+      - Extending: dev/extending.md
+      - Signals & Reconcile: dev/signals.md
+      - API: dev/api.md
+      - Data Model: dev/data-model.md

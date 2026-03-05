@@ -1,0 +1,7 @@
+recursive-include nautobot_routing_tables/static *
+recursive-include nautobot_routing_tables/templates *
+recursive-include nautobot_routing_tables/migrations *
+recursive-include docs *
+include mkdocs.yml
+include LICENSE
+include README.md

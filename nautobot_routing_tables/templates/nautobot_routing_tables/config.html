@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid">
+  <h1>Routing Tables - Configuration</h1>
+  <p>Configure via <code>PLUGINS_CONFIG["nautobot_routing_tables"]</code>.</p>
+
+  <h2>Connected Routes</h2>
+  <ul>
+    <li><code>AUTO_MANAGE_CONNECTED_ROUTES</code> (default: True)</li>
+    <li><code>AUTO_CREATE_PREFIXES_FOR_CONNECTED_ROUTES</code> (default: True)</li>
+    <li><code>REQUIRE_CABLE_FOR_CONNECTED_ROUTES</code> (default: True)</li>
+  </ul>
+</div>
+{% endblock %}
