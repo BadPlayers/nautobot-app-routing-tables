@@ -145,6 +145,8 @@ relative_files = true
 omit = [
     # Skip Tests
     "*/tests/*",
+    "*/migrations/*",
+    "*/tools/*",
 ]
 include = [
     "nautobot_routing_tables/*",

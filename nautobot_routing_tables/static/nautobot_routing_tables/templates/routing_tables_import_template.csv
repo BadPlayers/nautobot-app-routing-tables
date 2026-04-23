@@ -1,0 +1,1 @@
+device,vrf,prefix,protocol,next_hop,metric,admin_distance,admin_distance_override,parameters,is_managed,source_interface

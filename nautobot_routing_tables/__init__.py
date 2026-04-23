@@ -1,6 +1,5 @@
 """App declaration for nautobot_routing_tables."""
 
-# Metadata is inherited from Nautobot. If not including Nautobot in the environment, this should be added
 from importlib import metadata
 
 from nautobot.apps import NautobotAppConfig
@@ -22,8 +21,9 @@ class NautobotRoutingTablesConfig(NautobotAppConfig):
     base_url = "routing-tables"
     required_settings = []
     default_settings = {}
-    docs_view_name = "plugins:nautobot_routing_tables:docs"
     searchable_models = []
 
+    home_view_name = "plugins:nautobot_routing_tables:routingtable_list"
+    config_view_name = "plugins:nautobot_routing_tables:config"
 
-config = NautobotRoutingTablesConfig  # pylint:disable=invalid-name
+config = NautobotRoutingTablesConfig

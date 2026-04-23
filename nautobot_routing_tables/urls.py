@@ -1,4 +1,4 @@
-from django.urls import include, path
+from django.urls import path
 from nautobot.apps.urls import NautobotUIViewSetRouter
 
 from . import views
@@ -6,12 +6,12 @@ from . import views
 app_name = "nautobot_routing_tables"
 
 router = NautobotUIViewSetRouter()
-router.register("protocol-types", views.ProtocolTypeUIViewSet)
-router.register("routing-tables", views.RoutingTableUIViewSet)
-router.register("routing-protocols", views.RoutingProtocolUIViewSet)
-router.register("routes", views.RouteUIViewSet)
+router.register("routing-tables", views.RoutingTableUIViewSet, basename="routingtable")
+router.register("routing-protocols", views.RoutingProtocolUIViewSet, basename="routingprotocol")
+router.register("routes", views.RouteUIViewSet, basename="route")
 
 urlpatterns = [
     path("config/", views.ConfigView.as_view(), name="config"),
-    path("", include(router.urls)),
 ]
+
+urlpatterns += router.urls

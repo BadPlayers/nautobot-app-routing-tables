@@ -1,25 +1,19 @@
 import django_filters
 from nautobot.apps.filters import NautobotFilterSet
 
-from .models import ProtocolType, Route, RoutingProtocol, RoutingTable
+from .models import Route, RoutingProtocol, RoutingTable
 
 
 class RoutingTableFilterSet(NautobotFilterSet):
     class Meta:
         model = RoutingTable
-        fields = ["device", "vrf", "name"]
-
-
-class ProtocolTypeFilterSet(NautobotFilterSet):
-    class Meta:
-        model = ProtocolType
-        fields = ["name", "slug"]
+        fields = ["device", "vrf"]
 
 
 class RoutingProtocolFilterSet(NautobotFilterSet):
     class Meta:
         model = RoutingProtocol
-        fields = ["routing_table", "protocol_type", "name", "slug"]
+        fields = ["routing_table", "protocol", "admin_distance_override"]
 
 
 class RouteFilterSet(NautobotFilterSet):

@@ -3,7 +3,7 @@ from django.dispatch import receiver
 
 from nautobot.apps import nautobot_database_ready
 
-from .seed import ensure_default_protocol_types
+from .seed import seed_defaults
 from .signals import register_signals
 
 
@@ -15,6 +15,6 @@ def on_db_ready(sender, **kwargs):
 @receiver(post_migrate)
 def _post_migrate_seed(sender, **kwargs):
     try:
-        ensure_default_protocol_types()
+        seed_defaults()
     except Exception:
         pass
