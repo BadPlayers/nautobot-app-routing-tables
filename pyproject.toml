@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nautobot-app-routing-tables"
-version = "1.1.4"
+version = "1.2.0"
 description = "Nautobot Routing Tables"
 authors = ["Never77 <hgodzien@gmail.com>"]
 license = "Apache-2.0"
@@ -140,13 +140,13 @@ convention = "google"
 ]
 
 [tool.coverage.run]
+branch = true
 disable_warnings = ["already-imported"]
 relative_files = true
 omit = [
     # Skip Tests
     "*/tests/*",
     "*/migrations/*",
-    "*/tools/*",
 ]
 include = [
     "nautobot_routing_tables/*",

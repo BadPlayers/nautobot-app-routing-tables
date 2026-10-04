@@ -11,7 +11,11 @@ permissions:
   contents: read
 
 jobs:
+  test:
+    uses: ./.github/workflows/ci.yml
+
   release-build:
+    needs: test
     runs-on: ubuntu-latest
 
     steps:
@@ -19,13 +23,15 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.x"
+          python-version: "3.12"
 
       - name: Build release distributions
         run: |
-          # NOTE: put your own distribution build steps here.
-          python -m pip install build
+          python -m pip install build -r development/docs-requirements.txt
+          mkdocs build --strict
+          python nautobot_routing_tables/tools/copy_docs_to_static.py
           python -m build
+          python development/check_distribution.py
 
       - name: Upload distributions
         uses: actions/upload-artifact@v4

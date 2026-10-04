@@ -1,66 +1,69 @@
 # Nautobot Routing Tables
 
-<!--
-Developer Note - Remove Me!
+Manage device routing tables, protocol preferences and IPv4/IPv6 routes in Nautobot.
+The app provides a UI, REST API, CSV import/export jobs and optional automatic
+connected routes derived from interface address assignments.
 
-The README will have certain links/images broken until the PR is merged into `develop`. Update the GitHub links with whichever branch you're using (main etc.) if different.
+## Compatibility
 
-The logo of the project is a placeholder (docs/images/icon-nautobot-routing-tables.png) - please replace it with your app icon, making sure it's at least 200x200px and has a transparent background!
+- Nautobot **2.4.x and 3.x**, with PostgreSQL.
+- Automated tests cover **2.4.0, 2.4.26, 3.0.0 and 3.2.6** on Python 3.12.
+- Use a Python version supported by your Nautobot release.
 
-To avoid extra work and temporary links, make sure that publishing docs (or merging a PR) is done at the same time as setting up the docs site on RTD, then test everything.
--->
+## Installation
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/BadPlayers/nautobot-app-nautobot-routing-tables/develop/docs/images/icon-nautobot-routing-tables.png" class="logo" height="200px">
-  <br>
-  <a href="https://github.com/BadPlayers/nautobot-app-nautobot-routing-tables/actions"><img src="https://github.com/BadPlayers/nautobot-app-nautobot-routing-tables/actions/workflows/ci.yml/badge.svg?branch=main"></a>
-  <a href="https://docs.nautobot.com/projects/nautobot-routing-tables/en/latest/"><img src="https://readthedocs.org/projects/nautobot-app-routing-tables/badge/"></a>
-  <a href="https://pypi.org/project/nautobot-routing-tables/"><img src="https://img.shields.io/pypi/v/nautobot-routing-tables"></a>
-  <a href="https://pypi.org/project/nautobot-routing-tables/"><img src="https://img.shields.io/pypi/dm/nautobot-routing-tables"></a>
-  <br>
-  An <a href="https://networktocode.com/nautobot-apps/">App</a> for <a href="https://nautobot.com/">Nautobot</a>.
-</p>
+Install into the same environment as Nautobot:
 
-## Overview
+```shell
+pip install nautobot-app-routing-tables
+nautobot-server post_upgrade
+```
 
-> Developer Note: Add a long (2-3 paragraphs) description of what the App does, what problems it solves, what functionality it adds to Nautobot, what external systems it works with etc.
+Add `"nautobot_routing_tables"` to `PLUGINS` in your Nautobot configuration before
+running `post_upgrade`, then restart the web and worker processes.
 
-### Screenshots
+## Create a table and its routes
 
-> Developer Note: Add any representative screenshots of the App in action. These images should also be added to the `docs/user/app_use_cases.md` section.
+1. Open **Routing → Routing Tables → Add** and select a device and optional VRF.
+2. Leave **Add routes after saving** selected to open the first route immediately.
+3. Select the destination prefix and enter an existing gateway IP, prefix or local
+   interface name. Static routing is selected by default.
+4. Use **Create and Add Another** to keep the same table and protocol for the next
+   route, or save normally to return to the table and see its routes.
 
-> Developer Note: Place the files in the `docs/images/` folder and link them using only full URLs from GitHub, for example: `![Overview](https://raw.githubusercontent.com/BadPlayers/nautobot-app-nautobot-routing-tables/develop/docs/images/app-overview.png)`. This absolute static linking is required to ensure the README renders properly in GitHub, the docs site, and any other external sites like PyPI.
+The prefix must belong to the selected VRF. Global tables accept prefixes without
+VRF membership. Route distance overrides the table protocol preference, which
+otherwise falls back to the built-in protocol distance.
 
-More screenshots can be found in the [Using the App](https://docs.nautobot.com/projects/nautobot-routing-tables/en/latest/user/app_use_cases/) page in the documentation. Here's a quick overview of some of the app's added functionality:
+## Configuration
 
-![](https://raw.githubusercontent.com/BadPlayers/nautobot-app-nautobot-routing-tables/develop/docs/images/placeholder.png)
+```python
+PLUGINS_CONFIG = {
+    "nautobot_routing_tables": {
+        "AUTO_MANAGE_CONNECTED_ROUTES": True,
+        "AUTO_CREATE_PREFIXES_FOR_CONNECTED_ROUTES": True,
+        "REQUIRE_CABLE_FOR_CONNECTED_ROUTES": True,
+    },
+}
+```
 
-## Try it out!
-
-> Developer Note: Only keep this section if appropriate. Update link to correct sandbox.
-
-This App is installed in the Nautobot Community Sandbox found over at [demo.nautobot.com](https://demo.nautobot.com/)!
-
-> For a full list of all the available always-on sandbox environments, head over to the main page on [networktocode.com](https://www.networktocode.com/nautobot/sandbox-environments/).
+Connected routes use the interface VRF, address namespace and subnet mask. A
+routing table must already exist. Interface changes, IP assignments and cable
+changes are reconciled after commit. Disabling an interface or removing its
+address/cable removes only its managed connected routes. Deleting an interface
+also removes its owned managed routes to avoid orphan records.
 
 ## Documentation
 
-Full documentation for this App can be found over on the [Nautobot Docs](https://docs.nautobot.com) website:
+- [Release notes and upgrade details](https://github.com/BadPlayers/nautobot-app-routing-tables/blob/main/docs/admin/release_notes/version_1.2.md)
+- [Installation](https://github.com/BadPlayers/nautobot-app-routing-tables/blob/main/docs/admin/install.md)
+- [User workflow and CSV format](https://github.com/BadPlayers/nautobot-app-routing-tables/blob/main/docs/user/ui.md)
+- [Testing and contribution](https://github.com/BadPlayers/nautobot-app-routing-tables/blob/main/docs/dev/testing.md)
 
-- [User Guide](https://docs.nautobot.com/projects/nautobot-routing-tables/en/latest/user/app_overview/) - Overview, Using the App, Getting Started.
-- [Administrator Guide](https://docs.nautobot.com/projects/nautobot-routing-tables/en/latest/admin/install/) - How to Install, Configure, Upgrade, or Uninstall the App.
-- [Developer Guide](https://docs.nautobot.com/projects/nautobot-routing-tables/en/latest/dev/contributing/) - Extending the App, Code Reference, Contribution Guide.
-- [Release Notes / Changelog](https://docs.nautobot.com/projects/nautobot-routing-tables/en/latest/admin/release_notes/).
-- [Frequently Asked Questions](https://docs.nautobot.com/projects/nautobot-routing-tables/en/latest/user/faq/).
+## Development
 
-### Contributing to the Documentation
-
-You can find all the Markdown source for the App documentation under the [`docs`](https://github.com/BadPlayers/nautobot-app-nautobot-routing-tables/tree/develop/docs) folder in this repository. For simple edits, a Markdown capable editor is sufficient: clone the repository and edit away.
-
-If you need to view the fully-generated documentation site, you can build it with [MkDocs](https://www.mkdocs.org/). A container hosting the documentation can be started using the `invoke` commands (details in the [Development Environment Guide](https://docs.nautobot.com/projects/nautobot-routing-tables/en/latest/dev/dev_environment/#docker-development-environment)) on [http://localhost:8001](http://localhost:8001). Using this container, as your changes to the documentation are saved, they will be automatically rebuilt and any pages currently being viewed will be reloaded in your browser.
-
-Any PRs with fixes or improvements are very welcome!
-
-## Questions
-
-For any questions or comments, please check the [FAQ](https://docs.nautobot.com/projects/nautobot-routing-tables/en/latest/user/faq/) first. Feel free to also swing by the [Network to Code Slack](https://networktocode.slack.com/) (channel `#nautobot`), sign up [here](http://slack.networktocode.com/) if you don't have an account.
+The CI workflow runs the unit, PostgreSQL regression, REST, UI, query-count and
+migration tests across the supported Nautobot versions. It also checks lint,
+migration consistency and a minimum **95% branch-aware coverage** of the app.
+Tests and migration source are excluded from that percentage; migrations are
+executed explicitly against both empty schemas and legacy records.

@@ -1,7 +1,4 @@
-# Nautobot Routing Tables Example Model
+# Routing Data Models
 
-!!! warning "Developer Note - Remove Me!"
-    Provide a summary of this model and how it is to be used. Then provide a list of the fields, field_type and field_description.
-
-- `name` (string): Unique identifier for the nautobot routing tables example model.
-- `description`: (string): Description for the nautobot routing tables example model.
+See the [modeling guide](../user/modeling.md) for RoutingTable, RoutingProtocol and
+Route, and the [source reference](../dev/code_reference/package.md) for their implementation.

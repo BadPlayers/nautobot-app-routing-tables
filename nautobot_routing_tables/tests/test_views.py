@@ -8,7 +8,9 @@ class RoutingViewsTestCase(SimpleTestCase):
         menu_tab = navigation.menu_items[0]
         menu_group = menu_tab.groups[0]
         self.assertEqual(menu_tab.name, "Routing")
-        self.assertEqual([item.name for item in menu_group.items], ["Routing Tables", "Routing Protocol Overrides", "Routes"])
+        self.assertEqual(
+            [item.name for item in menu_group.items], ["Routing Tables", "Routing Protocol Overrides", "Routes"]
+        )
 
     def test_routing_table_detail_tables_exist(self):
         self.assertTrue(hasattr(tables, "RoutingTableDetailProtocolTable"))

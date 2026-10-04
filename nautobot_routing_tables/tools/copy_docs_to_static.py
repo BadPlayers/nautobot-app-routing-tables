@@ -1,3 +1,5 @@
+"""Copy the MkDocs build into the application static assets."""
+
 from __future__ import annotations
 
 import shutil
@@ -5,6 +7,7 @@ from pathlib import Path
 
 
 def main():
+    """Replace packaged documentation with the generated site."""
     repo_root = Path(__file__).resolve().parents[2]
     site_dir = repo_root / "site"
     if not site_dir.exists():

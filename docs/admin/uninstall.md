@@ -1,24 +1,14 @@
-# Uninstall the App from Nautobot
+# Uninstalling
 
-Here you will find any steps necessary to cleanly remove the App from your Nautobot environment.
-
-## Database Cleanup
-
-Prior to removing the app from the `nautobot_config.py`, run the following command to roll back any migration specific to this app.
+Back up the database before removing the app. Remove `nautobot_routing_tables`
+from `PLUGINS` and its configuration from `PLUGINS_CONFIG`, and remove the package
+from persistent deployment requirements. In Nautobot's Python environment:
 
 ```shell
-nautobot-server migrate nautobot_routing_tables zero
+pip uninstall nautobot-app-routing-tables
 ```
 
-!!! warning "Developer Note - Remove Me!"
-    Any other cleanup operations to ensure the database is clean after the app is removed. Is there anything else that needs cleaning up, such as CFs, relationships, etc. if they're no longer desired?
-
-## Remove App configuration
-
-Remove the configuration you added in `nautobot_config.py` from `PLUGINS` & `PLUGINS_CONFIG`.
-
-## Uninstall the package
-
-```bash
-$ pip3 uninstall nautobot-routing-tables
-```
+Restart web, worker and scheduler processes. Uninstalling the Python package does
+not delete its database tables. Migration 0004 is intentionally irreversible;
+do not use migration rollback as a data-removal procedure. Retain the backup and
+handle any permanent database cleanup separately according to your retention policy.

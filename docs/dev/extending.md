@@ -1,6 +1,9 @@
 # Extending the App
 
-!!! warning "Developer Note - Remove Me!"
-    Information on how to extend the App functionality.
+Keep protocol constants in `constants.py`, shared business logic in `services.py`
+and data validation in `models.py`. UI and CSV next-hop resolution must use the
+same resolver. Preserve object permissions when adding detail panels.
 
-Extending the application is welcome, however it is best to open an issue first, to ensure that a PR would be accepted and makes sense in terms of features and design.
+Use Django migrations for schema changes. Retain compatibility with Nautobot 2.4
+and 3.x, and add a regression test reproducing the changed behavior. See
+[Testing](testing.md) and [Signals](signals.md).
