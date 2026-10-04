@@ -1,0 +1,13 @@
+.git
+.venv
+.idea
+.env
+**/__pycache__
+.coverage*
+.*.log
+dist
+build
+site
+htmlcov
+coverage.xml
+development/creds.env

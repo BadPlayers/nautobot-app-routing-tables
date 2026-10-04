@@ -1,4 +1,6 @@
 <div class="d-flex align-items-center gap-2">
-    <a href="{{ add_route_url }}" class="btn btn-primary btn-sm">Add Route</a>
+    {% if perms.nautobot_routing_tables.add_route %}
+        <a href="{{ add_route_url }}" class="btn btn-primary btn-sm">Add Route</a>
+    {% endif %}
     <span class="text-muted">{{ routes_count|default:0 }}</span>
 </div>

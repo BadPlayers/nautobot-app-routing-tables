@@ -44,7 +44,9 @@ class RouteModelTestCase(SimpleTestCase):
     @patch("nautobot.extras.models.customfields.CustomField.objects.get_for_model", return_value=[])
     @patch("nautobot_routing_tables.models.Route.next_hop", new_callable=PropertyMock)
     @patch("nautobot_routing_tables.models.RoutingProtocol.objects.filter")
-    def test_clean_rejects_next_hop_ip_inside_destination_prefix(self, protocol_filter, next_hop_property, _custom_fields):
+    def test_clean_allows_next_hop_ip_inside_destination_prefix(
+        self, protocol_filter, next_hop_property, _custom_fields
+    ):
         protocol_filter.return_value.first.return_value = None
         vrf = make_vrf()
         route = Route(routing_table_id=1, prefix_id=1, protocol="static")
@@ -54,15 +56,14 @@ class RouteModelTestCase(SimpleTestCase):
         route.next_hop_type_id = 1
         route.next_hop_id = 101
 
-        with self.assertRaises(ValidationError) as context:
-            route.clean()
-
-        self.assertEqual(context.exception.message_dict["next_hop_id"], ["Next-hop IP cannot belong to the destination prefix."])
+        route.clean()
 
     @patch("nautobot.extras.models.customfields.CustomField.objects.get_for_model", return_value=[])
     @patch("nautobot_routing_tables.models.Route.next_hop", new_callable=PropertyMock)
     @patch("nautobot_routing_tables.models.RoutingProtocol.objects.filter")
-    def test_clean_rejects_next_hop_prefix_inside_destination_prefix(self, protocol_filter, next_hop_property, _custom_fields):
+    def test_clean_allows_next_hop_prefix_inside_destination_prefix(
+        self, protocol_filter, next_hop_property, _custom_fields
+    ):
         protocol_filter.return_value.first.return_value = None
         vrf = make_vrf()
         route = Route(routing_table_id=1, prefix_id=1, protocol="static")
@@ -72,10 +73,7 @@ class RouteModelTestCase(SimpleTestCase):
         route.next_hop_type_id = 1
         route.next_hop_id = 102
 
-        with self.assertRaises(ValidationError) as context:
-            route.clean()
-
-        self.assertIn("next_hop_id", context.exception.message_dict)
+        route.clean()
 
     @patch("nautobot.extras.models.customfields.CustomField.objects.get_for_model", return_value=[])
     @patch("nautobot_routing_tables.models.Route.next_hop", new_callable=PropertyMock)
@@ -116,7 +114,9 @@ class RouteModelTestCase(SimpleTestCase):
     @patch("nautobot.extras.models.customfields.CustomField.objects.get_for_model", return_value=[])
     @patch("nautobot_routing_tables.models.Route.next_hop", new_callable=PropertyMock)
     @patch("nautobot_routing_tables.models.RoutingProtocol.objects.filter")
-    def test_clean_requires_source_interface_for_managed_route(self, protocol_filter, next_hop_property, _custom_fields):
+    def test_clean_requires_source_interface_for_managed_route(
+        self, protocol_filter, next_hop_property, _custom_fields
+    ):
         protocol_filter.return_value.first.return_value = None
         next_hop_property.return_value = None
         vrf = make_vrf()

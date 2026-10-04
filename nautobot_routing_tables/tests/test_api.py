@@ -1,6 +1,6 @@
 from django.test import SimpleTestCase
 
-from nautobot_routing_tables.api import serializers, urls, views
+from nautobot_routing_tables.api import serializers, urls
 
 
 class RoutingAPITestCase(SimpleTestCase):

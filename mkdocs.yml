@@ -1,10 +1,10 @@
 ---
 dev_addr: "127.0.0.1:8001"
 edit_uri: "edit/main/docs"
-site_dir: "nautobot_routing_tables/static/nautobot_routing_tables/docs"
+site_dir: "site"
+use_directory_urls: false
 site_name: "Nautobot Routing Tables Documentation"
-site_url: "https://docs.nautobot.com/projects/nautobot-routing-tables/en/latest/"
-repo_url: "https://github.com/BadPlayers/nautobot-app-nautobot-routing-tables"
+repo_url: "https://github.com/BadPlayers/nautobot-app-routing-tables"
 copyright: "Copyright &copy; The Authors"
 theme:
   name: "material"
@@ -99,7 +99,7 @@ watch:
   - "README.md"
 
 validation:
-  omitted_files: "warn"
+  omitted_files: "info"
   absolute_links: "warn"
   unrecognized_links: "warn"
   anchors: "warn"
@@ -107,22 +107,32 @@ validation:
 nav:
   - Overview: "index.md"
   - User Guide:
+      - UI and CSV Workflow: "user/ui.md"
+      - Connected Routes: "user/connected-routes.md"
+      - Modeling: "user/modeling.md"
       - App Overview: "user/app_overview.md"
       - Getting Started: "user/app_getting_started.md"
       - Using the App: "user/app_use_cases.md"
       - Frequently Asked Questions: "user/faq.md"
       - External Interactions: "user/external_interactions.md"
       - Data Models:
-          - Nautobot Routing Tables Example Model: "models/nautobotroutingtablesexamplemodel.md"
+          - Routing Data Models: "models/nautobotroutingtablesexamplemodel.md"
   - Administrator Guide:
+      - Configuration: "admin/configuration.md"
+      - Permissions: "admin/permissions.md"
       - Install and Configure: "admin/install.md"
       - Upgrade: "admin/upgrade.md"
       - Uninstall: "admin/uninstall.md"
       - Compatibility Matrix: "admin/compatibility_matrix.md"
       - Release Notes:
           - "admin/release_notes/index.md"
-          - v1.0: "admin/release_notes/version_1.0.md"
+          - v1.2: "admin/release_notes/version_1.2.md"
+          - Historical releases: "admin/release_notes/version_1.0.md"
   - Developer Guide:
+      - Testing: "dev/testing.md"
+      - REST API: "dev/api.md"
+      - Signals: "dev/signals.md"
+      - Data Model: "dev/data-model.md"
       - Extending the App: "dev/extending.md"
       - Contributing to the App: "dev/contributing.md"
       - Development Environment: "dev/dev_environment.md"

@@ -1,7 +1,14 @@
-# Architecture Decision Records
+# Architecture Decisions
 
-The intention is to document deviations from a standard Model View Controller (MVC) design.
+The app uses Nautobot PrimaryModel classes for routing data and a generic UUID
+reference for the three supported next-hop types. Protocol keys are fixed choices;
+per-table RoutingProtocol records represent overrides rather than a separate
+protocol catalog.
 
-!!! warning "Developer Note - Remove Me!"
-    Optional page, remove if not applicable.
-    For examples see [Golden Config](https://github.com/nautobot/nautobot-app-golden-config/blob/develop/docs/dev/arch_decision.md).
+Shared services provide CSV interchange and reconciliation. Forms resolve
+user-friendly values and run model validation before saving. UI/API querysets
+prefetch related forwarding data to avoid per-route lookups.
+
+Connected-route signals defer work until commit and track ownership by interface.
+PostgreSQL is the supported backend because the historical migration chain uses
+PostgreSQL-specific schema operations.

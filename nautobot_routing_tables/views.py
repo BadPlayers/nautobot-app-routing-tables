@@ -1,3 +1,7 @@
+"""Routing UI views and the table-to-routes creation workflow."""
+
+from urllib.parse import urlencode
+
 from django.urls import reverse
 from django.views.generic import TemplateView
 from django_tables2 import RequestConfig
@@ -15,6 +19,7 @@ from .forms import (
     RoutingTableForm,
 )
 from .models import Route, RoutingProtocol, RoutingTable
+from .services import optimized_routes
 from .tables import (
     RouteTable,
     RoutingProtocolTable,
@@ -24,16 +29,31 @@ from .tables import (
 
 
 class ConfigView(TemplateView):
+    """Display application configuration help."""
+
     template_name = "nautobot_routing_tables/config.html"
 
 
 class RoutingTableUIViewSet(NautobotUIViewSet):
+    """Manage routing tables and show their permitted child routes."""
+
     queryset = RoutingTable.objects.select_related("device", "vrf")
     serializer_class = RoutingTableSerializer
     filterset_class = RoutingTableFilterSet
     table_class = RoutingTableTable
     form_class = RoutingTableForm
     bulk_update_form_class = RoutingTableBulkEditForm
+
+    def _process_create_or_update_form(self, form):
+        creating = not form.instance.present_in_database
+        super()._process_create_or_update_form(form)
+        if (
+            creating
+            and form.cleaned_data.get("add_routes")
+            and self.request.user.has_perm("nautobot_routing_tables.add_route")
+        ):
+            self.success_url = f"{reverse('plugins:nautobot_routing_tables:route_add')}?{urlencode({'routing_table': form.instance.pk})}"
+
     object_detail_content = ObjectDetailContent(
         layout=LayoutChoices.ONE_OVER_TWO,
         panels=[
@@ -48,27 +68,30 @@ class RoutingTableUIViewSet(NautobotUIViewSet):
     )
 
     def get_extra_context(self, request, instance=None):
+        """Build the permitted route table and creation link."""
         context = super().get_extra_context(request, instance=instance)
 
         if instance is not None:
-            routes = (
-                Route.objects.filter(routing_table=instance)
-                .select_related("routing_table", "prefix", "next_hop_type", "source_interface")
-                .order_by("prefix__prefix_length", "prefix__network")
-            )
+            routes = optimized_routes(
+                Route.objects.restrict(request.user, "view").filter(routing_table=instance)
+            ).order_by("prefix__prefix_length", "prefix__network")
 
             routes_table = RoutingTableDetailRouteTable(routes, user=request.user)
             RequestConfig(request, paginate={"per_page": 25}).configure(routes_table)
 
             context["routes_table"] = routes_table
             context["routes_count"] = routes.count()
-            context["add_route_url"] = f"{reverse('plugins:nautobot_routing_tables:route_add')}?routing_table={instance.pk}"
+            context["add_route_url"] = (
+                f"{reverse('plugins:nautobot_routing_tables:route_add')}?routing_table={instance.pk}"
+            )
 
         return context
 
 
 class RoutingProtocolUIViewSet(NautobotUIViewSet):
-    queryset = RoutingProtocol.objects.select_related("routing_table")
+    """Manage protocol overrides within their routing table."""
+
+    queryset = RoutingProtocol.objects.select_related("routing_table__device", "routing_table__vrf")
     serializer_class = RoutingProtocolSerializer
     filterset_class = RoutingProtocolFilterSet
     table_class = RoutingProtocolTable
@@ -76,6 +99,7 @@ class RoutingProtocolUIViewSet(NautobotUIViewSet):
     bulk_update_form_class = RoutingProtocolBulkEditForm
 
     def get_form_kwargs(self):
+        """Initialize the parent table without overriding submitted data."""
         kwargs = super().get_form_kwargs()
         if not kwargs.get("data") and self.request.GET.get("routing_table"):
             kwargs.setdefault("initial", {})
@@ -84,14 +108,25 @@ class RoutingProtocolUIViewSet(NautobotUIViewSet):
 
 
 class RouteUIViewSet(NautobotUIViewSet):
-    queryset = Route.objects.select_related("routing_table", "prefix", "next_hop_type", "source_interface")
+    """Manage routes while retaining their parent table during entry."""
+
+    queryset = optimized_routes(Route.objects.all())
     serializer_class = RouteSerializer
     filterset_class = RouteFilterSet
     table_class = RouteTable
     form_class = RouteForm
     bulk_update_form_class = RouteBulkEditForm
 
+    def _process_create_or_update_form(self, form):
+        super()._process_create_or_update_form(form)
+        if "_addanother" in self.request.POST:
+            query = urlencode({"routing_table": form.instance.routing_table_id, "protocol": form.instance.protocol})
+            self.success_url = f"{reverse('plugins:nautobot_routing_tables:route_add')}?{query}"
+        elif not form.cleaned_data.get("return_url"):
+            self.success_url = form.instance.routing_table.get_absolute_url()
+
     def get_form_kwargs(self):
+        """Initialize the parent table without overriding submitted data."""
         kwargs = super().get_form_kwargs()
         if not kwargs.get("data") and self.request.GET.get("routing_table"):
             kwargs.setdefault("initial", {})

@@ -16,11 +16,14 @@ class DummyObject(SimpleNamespace):
 def make_vrf(label="VRF-A", prefix_matches=True):
     prefixes = MagicMock()
     prefixes.filter.return_value.exists.return_value = prefix_matches
-    return DummyObject(label=label, prefixes=prefixes, name=label)
+    return DummyObject(label=label, prefixes=prefixes, name=label, pk=1)
 
 
 def make_prefix(value, pk=1, vrf=None):
-    return DummyObject(label=value, pk=pk, prefix=value, vrf=vrf, _meta=DummyObject(label_lower="ipam.prefix"))
+    vrfs = MagicMock()
+    vrfs.exists.return_value = vrf is not None
+    vrfs.filter.return_value.exists.return_value = vrf is not None
+    return DummyObject(label=value, pk=pk, prefix=value, vrfs=vrfs, _meta=DummyObject(label_lower="ipam.prefix"))
 
 
 def make_ip_address(value):

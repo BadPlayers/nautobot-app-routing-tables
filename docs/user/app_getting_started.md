@@ -1,19 +1,15 @@
-# Getting Started with the App
+# Getting Started
 
-This document provides a step-by-step tutorial on how to get the App going and how to use it.
+An administrator must [install the app](../admin/install.md) and grant the
+[necessary permissions](../admin/permissions.md). Your device, VRF and destination
+prefixes must already exist in Nautobot.
 
-## Install the App
+Create a table for the device and optional VRF. Leave **Add routes after saving**
+enabled to enter its first route immediately. Use **Create and Add Another** to
+continue entering routes without reselecting the table.
 
-To install the App, please follow the instructions detailed in the [Installation Guide](../admin/install.md).
+For VRF tables, associate destination prefixes with that VRF. Global tables use
+prefixes without VRF membership. Gateway IP addresses and interfaces must exist
+before they can be selected as next-hops.
 
-## First steps with the App
-
-!!! warning "Developer Note - Remove Me!"
-    What (with screenshots preferably) does it look like to perform the simplest workflow within the App once installed?
-
-## What are the next steps?
-
-!!! warning "Developer Note - Remove Me!"
-    After taking the first steps, what else could the users look at doing.
-
-You can check out the [Use Cases](app_use_cases.md) section for more examples.
+See the [detailed UI and CSV guide](ui.md) for notation and import examples.

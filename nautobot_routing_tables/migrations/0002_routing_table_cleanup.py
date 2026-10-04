@@ -1,7 +1,7 @@
+# ruff: noqa: S608 -- SQL identifiers are fixed migration constants; data values are bound parameters.
+import django.db.models.deletion
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import migrations, models
-import django.db.models.deletion
-
 
 ADMIN_DISTANCE_VALIDATORS = [MinValueValidator(0), MaxValueValidator(255)]
 DEFAULT_ADMIN_DISTANCES = {
@@ -50,7 +50,7 @@ def table_exists(cursor, table_name):
 
 def get_content_type_id(apps, app_label, model):
     content_type_model = apps.get_model("contenttypes", "ContentType")
-    return content_type_model.objects.get(app_label=app_label, model=model).pk
+    return content_type_model.objects.get_or_create(app_label=app_label, model=model)[0].pk
 
 
 def migrate_protocols_and_routes(apps, schema_editor):
@@ -93,7 +93,7 @@ def migrate_protocols_and_routes(apps, schema_editor):
             """
         )
         for protocol_id, legacy_slug, legacy_distance, legacy_type_slug, legacy_type_distance in cursor.fetchall():
-            protocol = normalize_protocol(legacy_slug, legacy_type_slug)
+            protocol = normalize_protocol(legacy_type_slug, legacy_slug)
             admin_distance = legacy_distance
             if admin_distance is None:
                 admin_distance = legacy_type_distance
@@ -153,7 +153,7 @@ def migrate_protocols_and_routes(apps, schema_editor):
             next_hop_ip_id,
             next_hop_ip_text,
         ) in cursor.fetchall():
-            protocol = normalize_protocol(legacy_protocol_slug, legacy_protocol_type_slug)
+            protocol = normalize_protocol(legacy_protocol_type_slug, legacy_protocol_slug)
             if protocol == "unknown" and is_managed and source_interface_id:
                 protocol = "connected"
 
@@ -169,14 +169,16 @@ def migrate_protocols_and_routes(apps, schema_editor):
                 next_hop_type_id = ip_address_ct_id
                 next_hop_id = next_hop_ip_id
             elif next_hop_ip_text and has_ip_address_table:
-                cursor.execute(
-                    f"SELECT id FROM {ip_address_table} WHERE address LIKE %s ORDER BY id ASC LIMIT 1",
-                    [f"{next_hop_ip_text}/%"],
-                )
-                ip_match = cursor.fetchone()
-                if ip_match is not None:
-                    next_hop_type_id = ip_address_ct_id
-                    next_hop_id = ip_match[0]
+                host_field = apps.get_model("ipam", "IPAddress")._meta.get_field("host")
+                packed = host_field.get_db_prep_value(str(next_hop_ip_text), connection)
+                cursor.execute(f"SELECT id FROM {ip_address_table} WHERE host = %s", [packed])
+                matches = cursor.fetchall()
+                if len(matches) != 1:
+                    raise RuntimeError(
+                        f"Cannot uniquely resolve legacy next-hop {next_hop_ip_text}; resolve it before upgrading."
+                    )
+                next_hop_type_id = ip_address_ct_id
+                next_hop_id = matches[0][0]
 
             cursor.execute(
                 f"UPDATE {route_table} SET route_protocol = %s, next_hop_type_id = %s, next_hop_id = %s WHERE id = %s",
@@ -185,7 +187,6 @@ def migrate_protocols_and_routes(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("contenttypes", "0002_remove_content_type_name"),
         ("nautobot_routing_tables", "0001_initial"),
@@ -313,7 +314,7 @@ class Migration(migrations.Migration):
                 migrations.RunSQL(
                     sql="""
                     ALTER TABLE nautobot_routing_tables_route
-                    ADD COLUMN IF NOT EXISTS next_hop_id bigint
+                    ADD COLUMN IF NOT EXISTS next_hop_id uuid
                     """,
                     reverse_sql="""
                     ALTER TABLE nautobot_routing_tables_route
@@ -325,7 +326,7 @@ class Migration(migrations.Migration):
                 migrations.AddField(
                     model_name="route",
                     name="next_hop_id",
-                    field=models.PositiveBigIntegerField(blank=True, null=True),
+                    field=models.UUIDField(blank=True, null=True),
                 )
             ],
         ),

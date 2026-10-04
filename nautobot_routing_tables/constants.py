@@ -7,7 +7,6 @@ defaults so the UI behaves the way operators usually expect.
 
 from collections import OrderedDict
 
-
 ROUTING_PROTOCOL_DEFAULTS = OrderedDict(
     (
         ("connected", {"label": "Connected", "admin_distance": 0}),

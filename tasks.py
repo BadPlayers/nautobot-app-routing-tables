@@ -719,6 +719,7 @@ def build_and_check_docs(context):
     """Build documentation to be available within Nautobot."""
     command = "mkdocs build --no-directory-urls --strict"
     run_command(context, command)
+    run_command(context, "python nautobot_routing_tables/tools/copy_docs_to_static.py")
 
     # Check for the existence of a release notes file for the current version if it's not a prerelease.
     version = context.run("poetry version --short", hide=True)

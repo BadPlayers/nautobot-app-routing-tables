@@ -1,0 +1,80 @@
+name: Tests
+
+on:
+  push:
+    branches: [main, 'codex/**']
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build release image with embedded documentation
+        run: docker build -f docker/Dockerfile -t routing-tables:test .
+      - name: Check installed app and documentation
+        run: >-
+          docker run --rm --entrypoint python routing-tables:test -c
+          "from importlib.metadata import version; from importlib.util import find_spec; from pathlib import Path;
+          print(version('nautobot-app-routing-tables'));
+          root = Path(find_spec('nautobot_routing_tables').origin).parent;
+          assert (root / 'static/nautobot_routing_tables/docs/user/ui.html').is_file()"
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        nautobot: ['2.4.0', '2.4.26', '3.0.0', '3.2.6']
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: nautobot
+          POSTGRES_PASSWORD: testing
+          POSTGRES_DB: nautobot
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U nautobot"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+      redis:
+        image: redis:6-alpine
+        ports: ['6379:6379']
+    env:
+      NAUTOBOT_CONFIG: ${{ github.workspace }}/development/test_config.py
+      NAUTOBOT_DB_HOST: localhost
+      NAUTOBOT_REDIS_URL: redis://localhost:6379/1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Nautobot and test tools
+        run: |
+          python -m pip install 'nautobot==${{ matrix.nautobot }}' coverage 'ruff==0.5.5' build
+          python -m pip install --no-deps -e .
+      - name: Lint
+        run: ruff check nautobot_routing_tables
+      - name: Check migration state
+        run: nautobot-server makemigrations nautobot_routing_tables --check --dry-run
+      - name: Tests and branch coverage
+        run: |
+          coverage run -m nautobot.core.cli test nautobot_routing_tables.tests --noinput
+          coverage report --fail-under=95
+          coverage xml
+      - name: Build and package documentation
+        run: |
+          python -m pip install -r development/docs-requirements.txt
+          mkdocs build --strict
+          python nautobot_routing_tables/tools/copy_docs_to_static.py
+      - name: Build distributions
+        run: |
+          python -m build
+          python development/check_distribution.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.nautobot }}
+          path: coverage.xml

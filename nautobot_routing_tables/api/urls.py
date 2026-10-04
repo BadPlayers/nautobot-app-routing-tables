@@ -1,3 +1,5 @@
+"""Routing application URL registration."""
+
 from nautobot.apps.api import OrderedDefaultRouter
 
 from .views import RouteViewSet, RoutingProtocolViewSet, RoutingTableViewSet

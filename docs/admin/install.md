@@ -1,81 +1,36 @@
-# Installing the App in Nautobot
+# Installing the App
 
-Here you will find detailed instructions on how to **install** and **configure** the App within your Nautobot environment.
+Use Nautobot 2.4.x or 3.x with PostgreSQL. No access to network devices or external
+services is required by the app. See the [compatibility matrix](compatibility_matrix.md).
 
-!!! warning "Developer Note - Remove Me!"
-    Detailed instructions on installing the App. You will need to update this section based on any additional dependencies or prerequisites.
-
-## Prerequisites
-
-- The app is compatible with Nautobot 3.0.0 and higher.
-- Databases supported: PostgreSQL, MySQL
-
-!!! note
-    Please check the [dedicated page](compatibility_matrix.md) for a full compatibility matrix and the deprecation policy.
-
-### Access Requirements
-
-!!! warning "Developer Note - Remove Me!"
-    What external systems (if any) it needs access to in order to work.
-
-## Install Guide
-
-!!! note
-    Apps can be installed from the [Python Package Index](https://pypi.org/) or locally. See the [Nautobot documentation](https://docs.nautobot.com/projects/core/en/stable/user-guide/administration/installation/app-install/) for more details. The pip package name for this app is [`nautobot-routing-tables`](https://pypi.org/project/nautobot-routing-tables/).
-
-The app is available as a Python package via PyPI and can be installed with `pip`:
+Install the package in Nautobot's Python environment:
 
 ```shell
-pip install nautobot-routing-tables
+pip install nautobot-app-routing-tables
 ```
 
-To ensure Nautobot Routing Tables is automatically re-installed during future upgrades, create a file named `local_requirements.txt` (if not already existing) in the Nautobot root directory (alongside `requirements.txt`) and list the `nautobot-routing-tables` package:
-
-```shell
-echo nautobot-routing-tables >> local_requirements.txt
-```
-
-Once installed, the app needs to be enabled in your Nautobot configuration. The following block of code below shows the additional configuration required to be added to your `nautobot_config.py` file:
-
-- Append `"nautobot_routing_tables"` to the `PLUGINS` list.
-- Append the `"nautobot_routing_tables"` dictionary to the `PLUGINS_CONFIG` dictionary and override any defaults.
+Add the package to your deployment's `local_requirements.txt` or equivalent
+persistent dependency configuration. Append the app to the existing configuration:
 
 ```python
-# In your nautobot_config.py
-PLUGINS = ["nautobot_routing_tables"]
-
-# PLUGINS_CONFIG = {
-#   "nautobot_routing_tables": {
-#     ADD YOUR SETTINGS HERE
-#   }
-# }
+PLUGINS = ["nautobot_routing_tables"]  # Preserve any other installed apps.
+PLUGINS_CONFIG = {
+    "nautobot_routing_tables": {
+        "AUTO_MANAGE_CONNECTED_ROUTES": True,
+        "AUTO_CREATE_PREFIXES_FOR_CONNECTED_ROUTES": True,
+        "REQUIRE_CABLE_FOR_CONNECTED_ROUTES": True,
+    },
+}
 ```
 
-Once the Nautobot configuration is updated, run the Post Upgrade command (`nautobot-server post_upgrade`) to run migrations and clear any cache:
+Apply database migrations and collect static assets:
 
 ```shell
 nautobot-server post_upgrade
 ```
 
-Then restart (if necessary) the Nautobot services which may include:
+Restart the web, worker and scheduler processes using your deployment's service
+manager or container orchestrator. Grant users the [required permissions](permissions.md).
+The **Routing** menu provides tables, protocol overrides and routes.
 
-- Nautobot
-- Nautobot Workers
-- Nautobot Scheduler
-
-```shell
-sudo systemctl restart nautobot nautobot-worker nautobot-scheduler
-```
-
-## App Configuration
-
-!!! warning "Developer Note - Remove Me!"
-    Any configuration required to get the App set up. Edit the table below as per the examples provided.
-
-The app behavior can be controlled with the following list of settings:
-
-| Key     | Example | Default | Description                          |
-| ------- | ------ | -------- | ------------------------------------- |
-| `enable_backup` | `True` | `True` | A boolean to represent whether or not to run backup configurations within the app. |
-| `platform_slug_map` | `{"cisco_wlc": "cisco_aireos"}` | `None` | A dictionary in which the key is the platform slug and the value is what netutils uses in any "network_os" parameter. |
-| `per_feature_bar_width` | `0.15` | `0.15` | The width of the table bar within the overview report |
+For an existing installation, follow the [upgrade guide](upgrade.md) first.

@@ -1,8 +1,11 @@
 {% extends "base.html" %}
+{% load static %}
 {% block content %}
 <div class="container-fluid">
   <h1>Routing Tables - Configuration</h1>
   <p>Configure via <code>PLUGINS_CONFIG["nautobot_routing_tables"]</code>.</p>
+
+  <p><a class="btn btn-primary" href="{% static 'nautobot_routing_tables/docs/index.html' %}">Open Routing Tables documentation</a></p>
 
   <h2>Connected Routes</h2>
   <ul>
