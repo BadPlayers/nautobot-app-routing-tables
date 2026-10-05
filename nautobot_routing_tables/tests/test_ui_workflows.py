@@ -93,7 +93,8 @@ class RoutingUIWorkflowTestCase(RoutingTestCase):
         route = Route.objects.create(routing_table=self.table, prefix=self.prefix, protocol="static", admin_distance=0)
         for table_class in (tables.RouteTable, tables.RoutingTableDetailRouteTable):
             table = table_class([route], user=self.user)
-            self.assertEqual(table.render_admin_distance(route), 0)
+            self.assertIn("0 <small", table.render_admin_distance(route))
+            self.assertIn("Route override", table.render_admin_distance(route))
             html = tables.RouteActionsColumn().render(route, table)
             self.assertIn("Edit", html)
             self.assertIn("Delete", html)

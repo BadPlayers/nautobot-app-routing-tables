@@ -12,6 +12,7 @@ from uuid import UUID
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
 from django.db import transaction
+from django.db.models import Prefetch
 from nautobot.dcim.models import Cable, Device, Interface
 from nautobot.extras.models import Status
 from nautobot.ipam.models import VRF, IPAddress, Namespace, Prefix
@@ -218,7 +219,7 @@ def next_hop_csv_value(route):
     return f"{kind}:{route.next_hop.pk}"
 
 
-def optimized_routes(queryset):
+def optimized_routes(queryset, protocol_overrides=None):
     """Load route display dependencies in bounded queries instead of per row."""
     return queryset.select_related(
         "routing_table__device",
@@ -226,15 +227,15 @@ def optimized_routes(queryset):
         "prefix__namespace",
         "source_interface",
         "next_hop_type",
-    ).prefetch_related("routing_table__protocol_overrides", "next_hop")
+    ).prefetch_related(Prefetch("routing_table__protocol_overrides", queryset=protocol_overrides), "next_hop")
 
 
-def export_routing_tables_as_csv(queryset):
+def export_routing_tables_as_csv(queryset, protocol_overrides=None):
     """Export routes with typed next-hops and namespace-qualified IPAM objects."""
     rows = io.StringIO(newline="")
     writer = csv.DictWriter(rows, fieldnames=CSV_TEMPLATE_HEADER.strip().split(","))
     writer.writeheader()
-    for route in optimized_routes(queryset).iterator(chunk_size=500):
+    for route in optimized_routes(queryset, protocol_overrides).iterator(chunk_size=500):
         override = route.protocol_override
         writer.writerow(
             {

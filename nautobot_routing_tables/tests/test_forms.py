@@ -45,7 +45,10 @@ class RouteFormTestCase(RoutingTestCase):
 
     def test_form_initial_typed_next_hop_and_static_default(self):
         route = Route.objects.create(routing_table=self.table, prefix=self.prefix, protocol="static", next_hop=self.ip)
-        self.assertEqual(RouteForm(instance=route).fields["next_hop"].initial, f"ip:{self.ip.pk}")
+        form = RouteForm(instance=route)
+        self.assertEqual(form.initial["next_hop_kind"], "ip")
+        self.assertEqual(form.initial["next_hop_object"], str(self.ip.pk))
+        self.assertIn("192.0.2.1", str(form["next_hop_object"]))
         self.assertEqual(RouteForm().initial["protocol"], "static")
 
     def test_table_form_offers_add_routes_only_when_creating(self):

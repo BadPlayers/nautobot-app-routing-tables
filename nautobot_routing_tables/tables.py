@@ -39,16 +39,38 @@ class RoutingTableTable(BaseTable):
     """Display device and VRF routing contexts."""
 
     pk = ToggleColumn()
+    context = tables.Column(accessor="pk", verbose_name="Routing table", order_by=("device__name", "vrf__name"))
     device = tables.Column(linkify=True, verbose_name="Device")
-    vrf = tables.Column(linkify=True, verbose_name="VRF")
+    vrf = tables.Column(linkify=True, verbose_name="VRF", default="Global")
+    route_count = tables.Column(verbose_name="Routes", orderable=False, default=0)
+    add_route = tables.Column(empty_values=(), verbose_name="", orderable=False)
     actions = ButtonsColumn(RoutingTable, verbose_name="")
+
+    def __init__(self, *args, user=None, **kwargs):
+        """Retain the user for permission-aware creation links."""
+        self.user = user
+        super().__init__(*args, user=user, **kwargs)
+
+    def render_context(self, record):
+        """Open the routing table itself instead of its device."""
+        return format_html('<a href="{}">{}</a>', record.get_absolute_url(), record)
+
+    def render_add_route(self, record):
+        """Offer a direct route creation action to authorized users."""
+        if self.user and self.user.has_perm("nautobot_routing_tables.add_route"):
+            return format_html(
+                '<a class="btn btn-primary btn-sm" href="{}?routing_table={}">Add route</a>',
+                reverse("plugins:nautobot_routing_tables:route_add"),
+                record.pk,
+            )
+        return ""
 
     class Meta(BaseTable.Meta):
         """Declare framework metadata."""
 
         model = RoutingTable
-        fields = ("pk", "device", "vrf", "actions")
-        default_columns = ("pk", "device", "vrf", "actions")
+        fields = ("pk", "context", "device", "vrf", "route_count", "add_route", "actions")
+        default_columns = ("pk", "context", "route_count", "add_route", "actions")
 
 
 class RoutingProtocolTable(BaseTable):
@@ -79,7 +101,7 @@ class RoutingProtocolTable(BaseTable):
 class RoutingTableDetailProtocolTable(BaseTable):
     """Display protocol overrides within a table detail page."""
 
-    protocol = tables.Column(verbose_name="Protocol")
+    protocol = tables.Column(verbose_name="Protocol", linkify=lambda record: record.get_absolute_url())
     default_admin_distance = tables.Column(verbose_name="Default Distance")
     admin_distance_override = tables.Column(verbose_name="Override")
     actions = ButtonsColumn(RoutingProtocol, verbose_name="")
@@ -92,17 +114,42 @@ class RoutingTableDetailProtocolTable(BaseTable):
         default_columns = ("protocol", "default_admin_distance", "admin_distance_override", "actions")
 
 
-class RouteTable(BaseTable):
+class RouteDisplayMixin:
+    """Explain effective distances and automatic route ownership."""
+
+    def render_admin_distance(self, record):
+        """Show both the effective value and where it was configured."""
+        origin = (
+            "Route override"
+            if record.admin_distance is not None
+            else "Table override"
+            if record.protocol_override
+            else "Protocol default"
+        )
+        return format_html('{} <small class="text-muted">{}</small>', record.resolved_admin_distance, origin)
+
+    def render_is_managed(self, record):
+        """Use words instead of an unexplained boolean icon."""
+        if record.is_managed and record.source_interface:
+            return format_html(
+                'Automatic · <a href="{}">{}</a>',
+                record.source_interface.get_absolute_url(),
+                record.source_interface.name,
+            )
+        return "Automatic" if record.is_managed else "Manual"
+
+
+class RouteTable(RouteDisplayMixin, BaseTable):
     """Display forwarding information and permitted route actions."""
 
     pk = ToggleColumn()
     routing_table = tables.Column(linkify=True, verbose_name="Routing Table")
-    prefix = tables.Column(linkify=True, verbose_name="Prefix")
+    prefix = tables.Column(linkify=lambda record: record.get_absolute_url(), verbose_name="Destination")
     protocol = tables.Column(verbose_name="Protocol")
     next_hop_display = tables.Column(empty_values=(), verbose_name="Next-hop")
     admin_distance = tables.Column(empty_values=(), verbose_name="Distance")
     metric = tables.Column(verbose_name="Metric")
-    is_managed = tables.BooleanColumn(verbose_name="Managed")
+    is_managed = tables.Column(verbose_name="Origin")
     source_interface = tables.Column(linkify=True, verbose_name="Source Intf")
     actions = RouteActionsColumn()
 
@@ -110,10 +157,6 @@ class RouteTable(BaseTable):
         """Initialize fields and context for this instance."""
         self.user = user
         super().__init__(*args, user=user, **kwargs)
-
-    def render_admin_distance(self, record):
-        """Display the effective administrative distance."""
-        return record.resolved_admin_distance
 
     class Meta(BaseTable.Meta):
         """Declare framework metadata."""
@@ -145,26 +188,22 @@ class RouteTable(BaseTable):
         )
 
 
-class RoutingTableDetailRouteTable(BaseTable):
+class RoutingTableDetailRouteTable(RouteDisplayMixin, BaseTable):
     """Display routes within their parent table."""
 
     pk = ToggleColumn()
-    prefix = tables.Column(linkify=True, verbose_name="Prefix")
+    prefix = tables.Column(linkify=lambda record: record.get_absolute_url(), verbose_name="Destination")
     protocol = tables.Column(verbose_name="Protocol")
     next_hop_display = tables.Column(empty_values=(), verbose_name="Next-hop")
     admin_distance = tables.Column(empty_values=(), verbose_name="Distance")
     metric = tables.Column(verbose_name="Metric")
-    is_managed = tables.BooleanColumn(verbose_name="Managed")
+    is_managed = tables.Column(verbose_name="Origin")
     actions = RouteActionsColumn()
 
     def __init__(self, *args, user=None, **kwargs):
         """Initialize fields and context for this instance."""
         self.user = user
         super().__init__(*args, user=user, **kwargs)
-
-    def render_admin_distance(self, record):
-        """Display the effective administrative distance."""
-        return record.resolved_admin_distance
 
     class Meta(BaseTable.Meta):
         """Declare framework metadata."""

@@ -1,6 +1,8 @@
 <div class="d-flex align-items-center gap-2">
     {% if perms.nautobot_routing_tables.add_route %}
         <a href="{{ add_route_url }}" class="btn btn-primary btn-sm">Add Route</a>
+        <a href="{{ add_routes_url }}" class="btn btn-default btn-secondary btn-sm">Add multiple routes</a>
     {% endif %}
+    {% if perms.nautobot_routing_tables.view_route %}<a href="{{ export_routes_url }}" class="btn btn-default btn-secondary btn-sm">Export CSV</a>{% endif %}
     <span class="text-muted">{{ routes_count|default:0 }}</span>
 </div>
