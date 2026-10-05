@@ -1,6 +1,7 @@
 """Filter sets shared by the UI and REST API."""
 
 import django_filters
+from django.db.models import Q
 from nautobot.apps.filters import NautobotFilterSet
 
 from .models import Route, RoutingProtocol, RoutingTable
@@ -8,6 +9,12 @@ from .models import Route, RoutingProtocol, RoutingTable
 
 class RoutingTableFilterSet(NautobotFilterSet):
     """Filter tables by device and routing context."""
+
+    q = django_filters.CharFilter(method="search")
+
+    def search(self, queryset, name, value):
+        """Search the human-readable device and VRF rather than UUIDs."""
+        return queryset.filter(Q(device__name__icontains=value) | Q(vrf__name__icontains=value))
 
     class Meta:
         """Declare framework metadata."""

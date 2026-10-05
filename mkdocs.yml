@@ -126,6 +126,7 @@ nav:
       - Compatibility Matrix: "admin/compatibility_matrix.md"
       - Release Notes:
           - "admin/release_notes/index.md"
+          - v1.3: "admin/release_notes/version_1.3.md"
           - v1.2: "admin/release_notes/version_1.2.md"
           - Historical releases: "admin/release_notes/version_1.0.md"
   - Developer Guide:

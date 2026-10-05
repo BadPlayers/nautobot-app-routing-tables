@@ -7,15 +7,48 @@ and leave **Add routes after saving** enabled. Saving opens a route form with
 the table already selected. Disable the checkbox to create only the table.
 The option is available on creation; editing a table keeps the normal workflow.
 
-Static is the initial protocol. Enter a destination prefix and an existing
-next-hop IP address, prefix or local interface name. `ip:`, `prefix:` and
-`interface:` prefixes remove ambiguity; each also accepts an object UUID.
-A route-specific distance is optional, and zero is a valid value.
+The table list links directly to each table and shows its visible route count.
+**Add route** opens the form with the parent table already selected.
+
+Static is the initial protocol. Search for a destination prefix, select the
+next-hop type (**IP address**, **Interface** or **Prefix**) and search for an
+existing object. Prefixes follow the table's VRF, interfaces follow its device,
+and IP/prefix next-hops follow the destination address family. Labels include
+the namespace or device to distinguish otherwise identical values.
+
+**Advanced options** contains the metric, distance override and automatic
+management fields. A text next-hop input remains available there as an
+alternative to the selector: `ip:`, `prefix:` and `interface:` values and UUIDs
+are supported. Use either the selector or text input, not both. Zero is a valid
+distance. A blank distance inherits the table's protocol override, then the
+protocol default. The route list identifies the origin of the effective value.
 
 **Create and Add Another** retains the selected table and protocol. Saving
 normally returns to the parent table. The table detail page includes an **Add
 Route** button for users with route creation permission. Its route list respects
 object-level view permissions.
+
+## Add several routes together
+
+From a table, select **Add multiple routes**. Five rows are offered initially;
+**Add 5 rows** extends the form up to 50 rows. **Duplicate this row** copies a
+row without saving it, so you can change its destination or next-hop. Empty
+extra rows are ignored; **Skip this row** explicitly omits an unwanted row.
+At least one valid route is required.
+
+**Save all routes** validates every row before saving. Duplicates, invalid
+next-hops or a database conflict prevent the entire batch from being saved.
+The batch creates manual routes and returns to the table when successful.
+
+## Work from the table
+
+The **Protocol preferences** panel lists visible overrides and links to their
+detail pages. **Add protocol override** retains the parent table. **Export CSV**
+downloads the routes visible to you directly, without opening a Job.
+
+Routes are labeled **Manual** or **Automatic**; automatic routes link to their
+source interface. Editing an automatic route displays a warning because
+reconciliation can update or remove it.
 
 ## CSV jobs
 

@@ -11,7 +11,12 @@ for wheel in wheels:
     with ZipFile(wheel) as archive:
         names = set(archive.namelist())
         root = "nautobot_routing_tables/static/nautobot_routing_tables/docs/"
-        for page in ("index.html", "user/ui.html", "admin/release_notes/version_1.2.html"):
+        for page in (
+            "index.html",
+            "user/ui.html",
+            "admin/release_notes/version_1.2.html",
+            "admin/release_notes/version_1.3.html",
+        ):
             if root + page not in names:
                 raise SystemExit(f"{wheel}: missing documentation page {page}")
         if not any(name.startswith(root + "assets/") for name in names):

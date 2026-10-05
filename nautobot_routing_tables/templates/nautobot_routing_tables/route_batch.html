@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load form_helpers %}
+{% block title %}Add routes · {{ table }}{% endblock %}
+{% block content %}
+<h1>Add routes · {{ table }}</h1>
+<p>Enter several routes, then save them together. Empty rows are ignored. All rows must be valid before any route is saved.</p>
+<form method="post" novalidate>
+  {% csrf_token %}
+  {{ formset.management_form }}
+  {% if batch_error %}<div class="alert alert-danger" role="alert">{{ batch_error }}</div>{% endif %}
+  {{ formset.non_form_errors }}
+  {% for form in formset %}
+  <fieldset class="panel panel-default card mb-3" style="padding: 1rem; margin-bottom: 1rem;">
+    <legend>Route {{ forloop.counter }}</legend>
+    {{ form.routing_table }}
+    {{ form.routing_table.errors }}
+    {{ form.non_field_errors }}
+    <div class="row">
+    {% for field in form.visible_fields %}<div class="col-md-4">{% render_field field %}</div>{% endfor %}
+    </div>
+    <button type="submit" name="_duplicate" value="{{ forloop.counter0 }}" class="btn btn-default btn-secondary" formnovalidate>Duplicate this row</button>
+  </fieldset>
+  {% endfor %}
+  <button type="submit" name="_more" class="btn btn-default btn-secondary" formnovalidate>Add 5 rows</button>
+  <button type="submit" name="_save" class="btn btn-primary">Save all routes</button>
+  <a href="{{ table.get_absolute_url }}" class="btn btn-default btn-secondary">Cancel</a>
+</form>
+{% endblock %}
+{% block javascript %}{{ block.super }}{{ formset.media }}{% endblock %}

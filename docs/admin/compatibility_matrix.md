@@ -2,6 +2,7 @@
 
 | App version | Nautobot versions | Database | CI-tested Nautobot versions |
 | --- | --- | --- | --- |
+| 1.3.x | 2.4.x and 3.x | PostgreSQL | 2.4.0, 2.4.26, 3.0.0, 3.2.6 |
 | 1.2.x | 2.4.x and 3.x | PostgreSQL | 2.4.0, 2.4.26, 3.0.0, 3.2.6 |
 
 The package accepts Nautobot `>=2.4.0,<4.0.0`. Choose a Python version supported

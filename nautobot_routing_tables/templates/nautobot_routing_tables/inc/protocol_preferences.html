@@ -1,0 +1,5 @@
+<p>Distances inherit protocol defaults unless overridden here or on an individual route.</p>
+{% if perms.nautobot_routing_tables.add_routingprotocol %}
+<p><a class="btn btn-default btn-secondary btn-sm" href="{{ add_protocol_url }}">Add protocol override</a></p>
+{% endif %}
+{% include "inc/table.html" with table=protocols_table %}

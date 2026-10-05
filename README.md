@@ -55,7 +55,7 @@ also removes its owned managed routes to avoid orphan records.
 
 ## Documentation
 
-- [Release notes and upgrade details](https://github.com/BadPlayers/nautobot-app-routing-tables/blob/main/docs/admin/release_notes/version_1.2.md)
+- [Release notes and upgrade details](https://github.com/BadPlayers/nautobot-app-routing-tables/blob/main/docs/admin/release_notes/version_1.3.md)
 - [Installation](https://github.com/BadPlayers/nautobot-app-routing-tables/blob/main/docs/admin/install.md)
 - [User workflow and CSV format](https://github.com/BadPlayers/nautobot-app-routing-tables/blob/main/docs/user/ui.md)
 - [Testing and contribution](https://github.com/BadPlayers/nautobot-app-routing-tables/blob/main/docs/dev/testing.md)

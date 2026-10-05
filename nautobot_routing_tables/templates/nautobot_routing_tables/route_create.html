@@ -1,0 +1,26 @@
+{% extends "generic/object_create.html" %}
+{% load form_helpers %}
+{% block form %}
+<div class="panel panel-default card"><div class="panel-body card-body">
+  {% if form.instance.is_managed %}
+    <div class="alert alert-warning">This route is automatically managed. Reconciliation may update or remove it. Its source interface determines its lifecycle.</div>
+  {% endif %}
+  {% render_field form.routing_table %}
+  {% render_field form.prefix %}
+  {% render_field form.protocol %}
+  {% render_field form.next_hop_kind %}
+  {% render_field form.next_hop_object %}
+  <details {% if form.errors or form.instance.is_managed %}open{% endif %}>
+    <summary>Advanced options: distance, metric and automatic management</summary>
+    {% render_field form.admin_distance %}
+    {% render_field form.metric %}
+    {% render_field form.source_interface %}
+    {% render_field form.is_managed %}
+    {% render_field form.next_hop %}
+  </details>
+  </div></div>
+  <details {% if form.errors %}open{% endif %}>
+    <summary>Notes, custom fields and groups</summary>
+    {% include 'inc/extras_features_edit_form_fields.html' %}
+  </details>
+{% endblock %}
